@@ -2,7 +2,7 @@ package com.wefox.paymentservice.service.impl;
 
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.model.PaymentError;
-import com.wefox.paymentservice.service.LogsToQuarantine;
+import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.StoreLogsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +18,11 @@ import java.util.Map;
 public class SaveLogsIntoSystem implements StoreLogsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveLogsIntoSystem.class);
     private final RestOperations restOperations;
-    private final LogsToQuarantine logsToQuarantine;
+    private final PaymentAndLogToQuarantine paymentAndLogToQuarantine;
 
-    public SaveLogsIntoSystem(RestOperations restOperations, LogsToQuarantine logsToQuarantine) {
+    public SaveLogsIntoSystem(RestOperations restOperations, PaymentAndLogToQuarantine paymentAndLogToQuarantine) {
         this.restOperations = restOperations;
-        this.logsToQuarantine = logsToQuarantine;
+        this.paymentAndLogToQuarantine = paymentAndLogToQuarantine;
     }
 
     public PaymentError convertToError(Payment payment) {
@@ -35,7 +35,7 @@ public class SaveLogsIntoSystem implements StoreLogsService {
     }
 
     @Override
-    public void sendLogsToDefaultStorage(Payment payment) {
+    public void sendLogsToDefaultSystem(Payment payment) {
         try {
             PaymentError paymentError = convertToError(payment);
             HttpHeaders headers = new HttpHeaders();
@@ -58,7 +58,7 @@ public class SaveLogsIntoSystem implements StoreLogsService {
             } else {
                 // If connection with the default logger service fails, send the payment to quarantine
                 LOGGER.error("Failed to store logs. HTTP status code: {}", response.getStatusCodeValue());
-                logsToQuarantine.sendToQuarantine(payment);
+                paymentAndLogToQuarantine.sendLogToQuarantine(payment);
             }
         } catch (Exception e) {
             LOGGER.error("Error sending logs to storage", e);

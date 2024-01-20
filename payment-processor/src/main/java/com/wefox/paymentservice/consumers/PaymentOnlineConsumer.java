@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.repository.PaymentErrorRepository;
+import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.ProcessorService;
 import com.wefox.paymentservice.service.impl.ProcessPaymentsOnline;
 import org.slf4j.Logger;
@@ -17,11 +18,13 @@ import org.springframework.web.client.RestOperations;
 public class PaymentOnlineConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentOnlineConsumer.class);
     private final ProcessorService processorService;
+    private final PaymentAndLogToQuarantine paymentAndLogToQuarantine;
 
     @Autowired
-    public PaymentOnlineConsumer(PaymentDataRepository dataRepository, RestOperations restOperations, PaymentErrorRepository errorRepository) {
+    public PaymentOnlineConsumer(PaymentDataRepository dataRepository, RestOperations restOperations, PaymentErrorRepository errorRepository, PaymentAndLogToQuarantine paymentAndLogToQuarantine) {
+        this.paymentAndLogToQuarantine = paymentAndLogToQuarantine;
         // Strategy Pattern to implement the best strategy to process the payments
-        this.processorService = new ProcessPaymentsOnline(dataRepository, restOperations);
+        this.processorService = new ProcessPaymentsOnline(dataRepository, restOperations, paymentAndLogToQuarantine);
     }
 
     @KafkaListener(topics = "online", groupId = "myGroup")

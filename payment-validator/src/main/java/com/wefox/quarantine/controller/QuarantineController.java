@@ -25,10 +25,11 @@ public class QuarantineController {
         this.quarantineStoreService = quarantineStoreService;
     }
 
-    @PostMapping("/quarantine")
-    public ResponseEntity<String> publish(@RequestBody Payment payment) {
-          LOGGER.info("Saving to quarantine");
-          return ResponseEntity.ok("Payment saved in quarantine. Processed successfully.");
+    @PostMapping("/paymenttoquarantine")
+    public ResponseEntity<String> publishPayment(@RequestBody Payment payment) {
+        LOGGER.info("Saving Payment to quarantine");
+        quarantineStoreService.storePayment(payment);
+        return ResponseEntity.ok("Payment saved in quarantine. Processed successfully.");
     }
 
 }

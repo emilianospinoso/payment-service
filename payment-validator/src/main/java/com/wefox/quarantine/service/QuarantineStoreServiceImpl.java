@@ -7,22 +7,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 @Service
-public class PaymentValidationServiceImpl implements QuarantineStoreService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentValidationServiceImpl.class);
+public class QuarantineStoreServiceImpl implements QuarantineStoreService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuarantineStoreServiceImpl.class);
 
     private final PaymentErrorDataRepository dataRepository;
 
     @Autowired
-    public PaymentValidationServiceImpl(PaymentErrorDataRepository dataRepo, PaymentErrorDataRepository dataRepository) {
-        this.dataRepository = dataRepo;
+    public QuarantineStoreServiceImpl(PaymentErrorDataRepository dataRepository) {
+        this.dataRepository = dataRepository;
     }
 
     @Override
     public Payment storePayment(Payment payment) {
         dataRepository.save(payment);
-        LOGGER.info("Store in Quarantine:" + payment.getPaymentId());
+        LOGGER.info("Store Payment into Quarantine:" + payment.getPaymentId());
         return payment;
     }
-
 }
+
+
