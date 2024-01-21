@@ -15,7 +15,6 @@ public class QuarantineServiceImpl implements QuarantineService {
     public QuarantineServiceImpl(PaymentErrorDataRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
-
     @Override
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();

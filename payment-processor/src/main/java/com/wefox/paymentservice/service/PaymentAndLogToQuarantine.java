@@ -20,13 +20,11 @@ public class PaymentAndLogToQuarantine {
     }
 
     public void sendLogToQuarantine(Payment payment) {
-        ObjectMapper objectMapper = new ObjectMapper();
         restTemplate.postForObject(paymentValidatorApiUrl, payment, Boolean.class);
         LOGGER.error(payment.getPaymentId() + "Log was moved to quarantine");
     }
 
     public void sendPaymentToQuarantine(Payment payment) {
-        ObjectMapper objectMapper = new ObjectMapper();
         restTemplate.postForObject(paymentValidatorApiUrl, payment, Boolean.class);
         LOGGER.error(payment.getPaymentId() + " was moved to quarantine");
     }

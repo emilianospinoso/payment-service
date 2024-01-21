@@ -1,5 +1,5 @@
 <archetype>
-  <id>payment-validator</id>
+  <id>payment-quarantine</id>
   <sources>
     <source>src/main/java/App.java</source>
   </sources>

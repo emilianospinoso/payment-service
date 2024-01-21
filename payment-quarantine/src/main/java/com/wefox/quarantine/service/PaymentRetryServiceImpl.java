@@ -25,14 +25,11 @@ public class PaymentRetryServiceImpl implements PaymentRetryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentRetryServiceImpl.class);
 
-    public PaymentRetryServiceImpl(PaymentErrorDataRepository paymentRepository, RestTemplate restOperations,
-                                   @Value("${payment.endpoint}") String paymentEndpoint) {
+    public PaymentRetryServiceImpl(PaymentErrorDataRepository paymentRepository, RestTemplate restOperations, @Value("${payment.endpoint}") String paymentEndpoint) {
         this.paymentRepository = paymentRepository;
         this.restOperations = restOperations;
         this.paymentEndpoint = paymentEndpoint;
     }
-
-
     @Scheduled(fixedRate = 2 * 60 * 60 * 1000) // Each 2 hours
     @Async
     public void processPaymentsAgain() {
@@ -44,16 +41,13 @@ public class PaymentRetryServiceImpl implements PaymentRetryService {
             try {
                 sendPayment(payment);
             } catch (HttpServerErrorException e) {
-                // Handle server errors
                 LOGGER.error("Error sending payment {} - {}", payment.getPaymentId(), e.getMessage());
                 LOGGER.error("Start alarm in New Relic!!!");
             } catch (Exception e) {
-                // Handle other exceptions
                 LOGGER.error("Error processing payment {} - {}", payment.getPaymentId(), e.getMessage());
             }
         }
     }
-
     @Override
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();

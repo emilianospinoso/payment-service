@@ -18,12 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProcessPaymentsOnline implements ProcessorService {
     private final PaymentDataRepository dataRepository;
     private final RestOperations restOperations;
-    private final ObjectMapper objectMapper;  // Added ObjectMapper
+    private final ObjectMapper objectMapper;
 
     private final StoreLogsService storeLogsService;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPaymentsOnline.class);
 
-    // Adjust maxRetries according to your needs
     private static final int MAX_RETRIES = 3;
 
     private final PaymentAndLogToQuarantine paymentAndLogToQuarantine;
@@ -41,15 +40,12 @@ public class ProcessPaymentsOnline implements ProcessorService {
         try {
             ResponseEntity<String> response = sendRequestWithRetry(payment);
             if (response.getStatusCode().is2xxSuccessful()) {
-                // Check if payment with the same ID already exists
                 boolean paymentExists = dataRepository.existsById(payment.getPaymentId());
 
                 if (paymentExists) {
-                    // Update the existing payment
                     dataRepository.save(payment);
                     LOGGER.info("Payment updated successfully.");
                 } else {
-                    // Save a new payment
                     dataRepository.save(payment);
                     LOGGER.info("New payment processed successfully.");
                 }
@@ -61,23 +57,17 @@ public class ProcessPaymentsOnline implements ProcessorService {
     }
 
     private ResponseEntity<String> sendRequestWithRetry(Payment payment) {
-        int maxRetries = 5;
         AtomicInteger retryCount = new AtomicInteger(0);
 
-        while (retryCount.get() < maxRetries) {
+        while (retryCount.get() < MAX_RETRIES) {
             try {
                 LOGGER.info("Sending request. Retry count: {}", retryCount.get());
 
-                // Convert Payment object to JSON string
                 String paymentJson = objectMapper.writeValueAsString(payment);
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
-
-                // Set headers in the request
                 HttpEntity<String> requestEntity = new HttpEntity<>(paymentJson, headers);
-
-                // Send the request with headers
                 ResponseEntity<String> response = restOperations.exchange(
                         "http://localhost:9000/payment",
                         HttpMethod.POST,
@@ -91,20 +81,16 @@ public class ProcessPaymentsOnline implements ProcessorService {
                     retryCount.incrementAndGet();
                 }
             } catch (HttpServerErrorException e) {
-                // Handle server errors
                 handleServerError(e);
                 retryCount.incrementAndGet();
             } catch (RestClientException e) {
-                // Handle RestClientException
-                handleRestClientException(e);
+                LOGGER.error("RestClientException. Retrying...", e);
                 retryCount.incrementAndGet();
             } catch (Exception e) {
-                // Handle other exceptions
                 LOGGER.error("Error during JSON serialization: " + e);
                 retryCount.incrementAndGet();
             }
         }
-
         // If max retries reached, send to quarantine
         paymentAndLogToQuarantine.sendPaymentToQuarantine(payment);
         throw new RuntimeException("Max retries reached. Unable to get a successful response.");
@@ -116,9 +102,5 @@ public class ProcessPaymentsOnline implements ProcessorService {
         } else {
             LOGGER.error("HTTP Server Error. Retrying...", e);
         }
-    }
-
-    private void handleRestClientException(RestClientException e) {
-        LOGGER.error("RestClientException. Retrying...", e);
     }
 }

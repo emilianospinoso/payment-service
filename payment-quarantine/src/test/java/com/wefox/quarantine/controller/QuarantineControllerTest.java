@@ -40,26 +40,17 @@ public class QuarantineControllerTest {
 
     @Test
     public void testPublishPayment() throws Exception {
-        // Mock Payment object
         Payment mockPayment = new Payment();
         UUID paymentId = UUID.randomUUID();
         mockPayment.setPaymentId(paymentId);
-        mockPayment.setAccountId(123); // Set other properties as needed
-
-        // Mock the behavior of the quarantineStoreService
+        mockPayment.setAccountId(123);
         Mockito.when(quarantineStoreService.storePayment(Mockito.any(Payment.class))).thenReturn(mockPayment);
-
-        // Perform the HTTP POST request
         mockMvc.perform(MockMvcRequestBuilders.post("/paymenttoquarantine")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(mockPayment)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("Payment saved in quarantine. Processed successfully."));
-
-        // Verify that the storePayment method was called with the correct Payment object
         Mockito.verify(quarantineStoreService, Mockito.times(1)).storePayment(Mockito.eq(mockPayment));
-
-        // Additional verification if needed
         assertEquals(paymentId, mockPayment.getPaymentId());
     }
 }

@@ -19,11 +19,9 @@ public class PaymentError {
     private String errorType;
     private String errorDescription;
 
-    // Default no-args constructor required by JPA
     public PaymentError() {
     }
 
-    // Parameterized constructor
     public PaymentError(String id, String errorType, String errorDescription) {
         this.id = id;
         this.errorType = errorType;

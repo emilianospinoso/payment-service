@@ -14,12 +14,10 @@ public class QuarantineStoreServiceImpl implements QuarantineStoreService {
     private static final Logger LOGGER = LoggerFactory.getLogger(QuarantineStoreServiceImpl.class);
 
     private final PaymentErrorDataRepository dataRepository;
-
     @Autowired
     public QuarantineStoreServiceImpl(PaymentErrorDataRepository dataRepository) {
         this.dataRepository = dataRepository;
     }
-
     @Override
     public Payment storePayment(Payment payment) {
         dataRepository.save(payment);

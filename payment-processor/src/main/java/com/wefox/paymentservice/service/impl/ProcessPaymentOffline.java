@@ -27,11 +27,9 @@ public class ProcessPaymentOffline implements ProcessorService {
     public void processPayment(Payment payment) {
         try {
             if (payment.getPaymentId() != null && dataRepository.existsById(payment.getPaymentId())) {
-                // Payment with the given paymentId already exists, update it
                 LOGGER.info("Updating existing payment with paymentId: {}", payment.getPaymentId());
                 dataRepository.save(payment);
             } else {
-                // Payment does not exist, save the new payment
                 LOGGER.info("Saving new payment with paymentId: {}", payment.getPaymentId());
                 dataRepository.save(payment);
             }

@@ -41,18 +41,15 @@ public class SaveLogsIntoSystem implements StoreLogsService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Create a Map representing the JSON payload
             Map<String, Object> logPayload = new HashMap<>();
             logPayload.put("payment_id", paymentError.getId());
             logPayload.put("error_type", paymentError.getErrorType());
             logPayload.put("error_description", paymentError.getErrorDescription());
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(logPayload, headers);
 
-            // Use RestOperations to send the HTTP POST request
             ResponseEntity<String> response = restOperations.postForEntity(
                     "http://localhost:9000/log", requestEntity, String.class);
 
-            // Check the response status
             if (response.getStatusCode().is2xxSuccessful()) {
                 LOGGER.info("Logs stored successfully.");
             } else {

@@ -20,6 +20,6 @@ public class PaymentController {
     public String displayPayments(Model model) {
         List<Payment> payments = paymentService.getAllPayments();
         model.addAttribute("payments", payments);
-        return "payments"; // Check if this view name is correct
+        return "payments";
     }
 }

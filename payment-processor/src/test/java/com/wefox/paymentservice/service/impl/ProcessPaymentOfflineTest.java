@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.event.Level;
 
 import java.util.UUID;
 
@@ -33,36 +32,22 @@ public class ProcessPaymentOfflineTest {
 
     @Test
     public void testProcessPaymentForExistingPayment() {
-        // Arrange
         UUID existingPaymentId = UUID.randomUUID();
         Payment payment = new Payment();
         payment.setPaymentId(existingPaymentId);
-
-        // Mock behavior
         when(dataRepository.existsById(existingPaymentId)).thenReturn(true);
-
-        // Act
         paymentProcessor.processPayment(payment);
-
-        // Assert
         verify(dataRepository, times(1)).save(payment);
         verify(storeLogsService, never()).sendLogsToDefaultSystem(any());
     }
 
     @Test
     public void testProcessPaymentForNewPayment() {
-        // Arrange
         UUID newPaymentId = UUID.randomUUID();
         Payment payment = new Payment();
         payment.setPaymentId(newPaymentId);
-
-        // Mock behavior
         when(dataRepository.existsById(newPaymentId)).thenReturn(false);
-
-        // Act
         paymentProcessor.processPayment(payment);
-
-        // Assert
         verify(dataRepository, times(1)).save(payment);
         verify(storeLogsService, never()).sendLogsToDefaultSystem(any());
     }
