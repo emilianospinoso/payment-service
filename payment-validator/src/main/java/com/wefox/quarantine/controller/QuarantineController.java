@@ -1,6 +1,7 @@
 package com.wefox.quarantine.controller;
 
 import com.wefox.quarantine.model.Payment;
+import com.wefox.quarantine.service.PaymentRetryService;
 import com.wefox.quarantine.service.QuarantineService;
 import com.wefox.quarantine.service.QuarantineStoreService;
 import org.slf4j.Logger;
@@ -21,12 +22,18 @@ public class QuarantineController {
     private static final Logger LOGGER = LoggerFactory.getLogger(QuarantineController.class);
 
     private final QuarantineStoreService quarantineStoreService;
+    private final QuarantineService quarantineService;
+    private final PaymentRetryService paymentRetryService;
+
+
 
     @Autowired
-    private QuarantineService quarantineService;
-    @Autowired
-    public QuarantineController(QuarantineStoreService quarantineStoreService) {
+    public QuarantineController(QuarantineStoreService quarantineStoreService,
+                                QuarantineService quarantineService,
+                                PaymentRetryService paymentRetryService) {
         this.quarantineStoreService = quarantineStoreService;
+        this.quarantineService = quarantineService;
+        this.paymentRetryService = paymentRetryService;
     }
 
     @PostMapping("/paymenttoquarantine")
@@ -42,5 +49,17 @@ public class QuarantineController {
         List<Payment> payments = quarantineService.getAllPayments();
         model.addAttribute("payments", payments);
         return "quarantine";
+    }
+
+    @PostMapping("/quarantine/execute-payment-retry")
+    public ResponseEntity<String> executePaymentRetry() {
+        try {
+            paymentRetryService.processPaymentsAgain();
+            LOGGER.info("Trying to excecute retry payments.");
+            return ResponseEntity.ok("Payment retry executed successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body("Failed to execute payment retry. Error: " + e.getMessage());
+        }
     }
 }

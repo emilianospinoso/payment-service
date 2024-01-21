@@ -5,8 +5,25 @@
     <title>Quarantine Payments</title>
 </head>
 <body>
+<script>
+    function executePaymentRetry() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/quarantine/execute-payment-retry", true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    alert("Payment retry executed successfully!");
+                } else {
+                    alert("Failed to execute payment retry. Error: " + xhr.responseText);
+                }
+            }
+        };
+        xhr.send();
+    }
+</script>
 
 <h2>Quarantine Payments</h2>
+<button onclick="executePaymentRetry()">Execute Payment Retry</button>
 
 <table border="1">
     <thead>
@@ -30,6 +47,8 @@
     </tr>
     </tbody>
 </table>
+
+
 
 </body>
 </html>
