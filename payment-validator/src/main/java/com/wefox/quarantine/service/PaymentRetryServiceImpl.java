@@ -33,7 +33,7 @@ public class PaymentRetryServiceImpl implements PaymentRetryService {
     }
 
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 2 * 60 * 60 * 1000) // Each 2 hours
     @Async
     public void processPaymentsAgain() {
         LOGGER.info("Processing payments at {}", LocalDateTime.now());

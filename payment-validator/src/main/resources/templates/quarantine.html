@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quarantine Payments</title>
+</head>
+<body>
+
+<h2>Quarantine Payments</h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Payment ID</th>
+        <th>Account ID</th>
+        <th>Payment Type</th>
+        <th>Credit Card</th>
+        <th>Amount</th>
+        <th>Delay</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="payment : ${payments}">
+        <td th:text="${payment.paymentId}"></td>
+        <td th:text="${payment.accountId}"></td>
+        <td th:text="${payment.paymentType}"></td>
+        <td th:text="${payment.creditCard}"></td>
+        <td th:text="${payment.amount}"></td>
+        <td th:text="${payment.delay}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
