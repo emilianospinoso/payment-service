@@ -1,49 +1,53 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Payments Processed OK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments</title>
 </head>
 <body>
 
 <h2>Payments</h2>
 
-<form th:action="@{/payments}" method="get">
-    <label for="accountId">Filter by Account ID:</label>
-    <input type="number" id="accountId" name="accountId">
+<!-- Form to filter payments -->
+<form th:action="@{/payments}" th:object="${criteria}" method="get">
+    <label for="accountId">Account ID:</label>
+    <input type="text" th:field="*{accountId}" />
 
-    <label for="paymentType">Filter by Payment Type:</label>
-    <select id="paymentType" name="paymentType">
+    <label for="paymentType">Payment Type:</label>
+    <select th:field="*{paymentType}">
         <option value="">All</option>
-        <option value="Online">Online</option>
-        <option value="Offline">Offline</option>
+        <option value="online">Online</option>
+        <option value="offline">Offline</option>
     </select>
 
-    <label for="amountFilter">Filter by Amount:</label>
-    <input type="number" id="amountFilter" name="amountFilter">
+    <label for="amountGreaterThan">Amount Greater Than:</label>
+    <input type="text" th:field="*{amountGreaterThan}" />
 
     <button type="submit">Filter</button>
 </form>
 
+<!-- Display filtered payments -->
 <table border="1">
     <thead>
     <tr>
         <th>Payment ID</th>
         <th>Account ID</th>
-        <th>Payment Type</th>
-        <th>Credit Card</th>
         <th>Amount</th>
         <th>Delay</th>
+        <th>Credit Card</th>
+        <th>Payment Type</th>
     </tr>
     </thead>
     <tbody>
+    <!-- Loop through payments and display them -->
     <tr th:each="payment : ${payments}">
         <td th:text="${payment.paymentId}"></td>
         <td th:text="${payment.accountId}"></td>
-        <td th:text="${payment.paymentType}"></td>
-        <td th:text="${payment.creditCard}"></td>
         <td th:text="${payment.amount}"></td>
         <td th:text="${payment.delay}"></td>
+        <td th:text="${payment.creditCard}"></td>
+        <td th:text="${payment.paymentType}"></td>
     </tr>
     </tbody>
 </table>
