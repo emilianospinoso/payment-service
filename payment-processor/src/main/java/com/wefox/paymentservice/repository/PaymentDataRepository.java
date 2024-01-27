@@ -11,4 +11,6 @@ public interface PaymentDataRepository extends JpaRepository<Payment, String> {
 
     List<Payment> findByAccountIdAndPaymentType(int accountId, String paymentType);
 
+    List<Payment> findByAmountGreaterThan(int amount);
+
 }

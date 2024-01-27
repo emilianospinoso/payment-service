@@ -8,8 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class PaymentController {
@@ -21,7 +21,8 @@ public class PaymentController {
     public String displayPayments(
             Model model,
             @RequestParam(required = false) String accountId,
-            @RequestParam(required = false) String paymentType
+            @RequestParam(required = false) String paymentType,
+            @RequestParam(required = false) Integer amountFilter
     ) {
         List<Payment> payments;
 
@@ -32,12 +33,19 @@ public class PaymentController {
             if (paymentType != null && !paymentType.isEmpty()) {
                 payments = paymentService.getPaymentsByAccountIdAndType(accountIdInt, paymentType);
             }
+
+            if (amountFilter != null) {
+                payments = filterPaymentsByAmount(payments, amountFilter);
+            }
         } else {
             payments = paymentService.getAllPayments();
 
             if (paymentType != null && !paymentType.isEmpty()) {
-                // Fetch all payments and then filter by paymentType
                 payments = filterPaymentsByType(payments, paymentType);
+            }
+
+            if (amountFilter != null) {
+                payments = filterPaymentsByAmount(payments, amountFilter);
             }
         }
 
@@ -46,17 +54,14 @@ public class PaymentController {
     }
 
     private List<Payment> filterPaymentsByType(List<Payment> payments, String paymentType) {
-        // Implement the logic to filter payments by paymentType
-        // You might want to iterate through the list and keep only the matching payments
+        return payments.stream()
+                .filter(payment -> paymentType.equalsIgnoreCase(payment.getPaymentType()))
+                .collect(Collectors.toList());
+    }
 
-        List<Payment> filteredPayments = new ArrayList<>();
-
-        for (Payment payment : payments) {
-            if (paymentType.equalsIgnoreCase(payment.getPaymentType())) {
-                filteredPayments.add(payment);
-            }
-        }
-
-        return filteredPayments;
+    private List<Payment> filterPaymentsByAmount(List<Payment> payments, int amountFilter) {
+        return payments.stream()
+                .filter(payment -> payment.getAmount() >= amountFilter)
+                .collect(Collectors.toList());
     }
 }

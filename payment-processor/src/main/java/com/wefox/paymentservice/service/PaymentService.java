@@ -10,4 +10,7 @@ public interface PaymentService {
     List<Payment> getPaymentsByAccountId(int accountId);
 
     List<Payment> getPaymentsByAccountIdAndType(int accountId, String paymentType);
+
+    List<Payment> getPaymentsByAmountGreaterThan(int amount);
+
 }

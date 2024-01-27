@@ -32,4 +32,9 @@ public class PaymentServiceImpl implements PaymentService {
     public List<Payment> getPaymentsByAccountIdAndType(int accountId, String paymentType) {
         return paymentRepository.findByAccountIdAndPaymentType(accountId, paymentType);
     }
+
+    @Override
+    public List<Payment> getPaymentsByAmountGreaterThan(int amount) {
+        return paymentRepository.findByAmountGreaterThan(amount);
+    }
 }
