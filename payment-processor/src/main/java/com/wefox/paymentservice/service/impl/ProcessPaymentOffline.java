@@ -11,19 +11,16 @@ import org.springframework.web.client.RestOperations;
 
 public class ProcessPaymentOffline implements ProcessorService {
     private final PaymentDataRepository dataRepository;
-    private final RestOperations restOperations;
-
     private final StoreLogsService storeLogsService;
     private final Logger LOGGER = LoggerFactory.getLogger(ProcessPaymentOffline.class);
 
     public ProcessPaymentOffline(PaymentDataRepository dataRepository, RestOperations restOperations, PaymentAndLogToQuarantine paymentAndLogToQuarantine) {
         this.dataRepository = dataRepository;
-        this.restOperations = restOperations;
         this.storeLogsService = new SaveLogsIntoSystem(restOperations, paymentAndLogToQuarantine);
     }
 
 
-    @Override
+
     public void processPayment(Payment payment) {
         try {
             if (payment.getPaymentId() != null && dataRepository.existsById(payment.getPaymentId())) {

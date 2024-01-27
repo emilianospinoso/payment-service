@@ -1,9 +1,11 @@
 package com.wefox.quarantine.service;
 
 import com.wefox.quarantine.model.Payment;
+import com.wefox.quarantine.model.PaymentError;
 
 import java.util.List;
 
 public interface QuarantineService {
     List<Payment> getAllPayments();
+    List<PaymentError> getAllPaymentErrorLogs();
 }

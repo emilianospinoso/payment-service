@@ -1,6 +1,7 @@
 package com.wefox.quarantine.controller;
 
 import com.wefox.quarantine.model.Payment;
+import com.wefox.quarantine.model.PaymentError;
 import com.wefox.quarantine.service.PaymentRetryService;
 import com.wefox.quarantine.service.QuarantineService;
 import com.wefox.quarantine.service.QuarantineStoreService;
@@ -26,7 +27,6 @@ public class QuarantineController {
     private final PaymentRetryService paymentRetryService;
 
 
-
     @Autowired
     public QuarantineController(QuarantineStoreService quarantineStoreService,
                                 QuarantineService quarantineService,
@@ -43,12 +43,26 @@ public class QuarantineController {
         return ResponseEntity.ok("Payment saved in quarantine. Processed successfully.");
     }
 
+    @PostMapping("/logtoquarantine")
+    public ResponseEntity<String> publishErrorLog(@RequestBody PaymentError paymentError) {
+        LOGGER.info("Saving Error log to quarantine");
+        quarantineStoreService.storeErrorLog(paymentError);
+        return ResponseEntity.ok("Error log saved in quarantine. Processed successfully.");
+    }
+
 
     @GetMapping("/paymentsinquarantine")
     public String displayPayments(Model model) {
         List<Payment> payments = quarantineService.getAllPayments();
         model.addAttribute("payments", payments);
-        return "quarantine";
+        return "quarantinepayments";
+    }
+
+    @GetMapping("/qarantinelogs")
+    public String displayLogsInQuarantine(Model model) {
+        List<PaymentError> errors = quarantineService.getAllPaymentErrorLogs();
+        model.addAttribute("errors", errors);
+        return "quarantinelogs";
     }
 
     @PostMapping("/quarantine/execute-payment-retry")

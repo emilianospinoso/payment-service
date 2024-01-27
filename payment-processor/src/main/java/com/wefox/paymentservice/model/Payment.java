@@ -2,14 +2,10 @@ package com.wefox.paymentservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "payments_processed")
@@ -17,13 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Payment {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
     @JsonProperty("payment_id")
-    private UUID paymentId;
+    private String paymentId; // Change the type to String for UUID
 
     @JsonProperty("account_id")
     private int accountId;

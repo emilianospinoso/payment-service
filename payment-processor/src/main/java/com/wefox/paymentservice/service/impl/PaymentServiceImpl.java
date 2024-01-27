@@ -22,4 +22,14 @@ public class PaymentServiceImpl implements PaymentService {
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
     }
+
+    @Override
+    public List<Payment> getPaymentsByAccountId(int accountId) {
+        return paymentRepository.findByAccountId(accountId);
+    }
+
+    @Override
+    public List<Payment> getPaymentsByAccountIdAndType(int accountId, String paymentType) {
+        return paymentRepository.findByAccountIdAndPaymentType(accountId, paymentType);
+    }
 }

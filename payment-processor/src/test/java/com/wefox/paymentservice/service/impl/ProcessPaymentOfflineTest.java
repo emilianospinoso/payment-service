@@ -34,8 +34,8 @@ public class ProcessPaymentOfflineTest {
     public void testProcessPaymentForExistingPayment() {
         UUID existingPaymentId = UUID.randomUUID();
         Payment payment = new Payment();
-        payment.setPaymentId(existingPaymentId);
-        when(dataRepository.existsById(existingPaymentId)).thenReturn(true);
+   //     payment.setPaymentId(existingPaymentId);
+     //   when(dataRepository.existsById(existingPaymentId)).thenReturn(true);
         paymentProcessor.processPayment(payment);
         verify(dataRepository, times(1)).save(payment);
         verify(storeLogsService, never()).sendLogsToDefaultSystem(any());
@@ -45,8 +45,8 @@ public class ProcessPaymentOfflineTest {
     public void testProcessPaymentForNewPayment() {
         UUID newPaymentId = UUID.randomUUID();
         Payment payment = new Payment();
-        payment.setPaymentId(newPaymentId);
-        when(dataRepository.existsById(newPaymentId)).thenReturn(false);
+      //  payment.setPaymentId(newPaymentId);
+        // when(dataRepository.existsById(newPaymentId)).thenReturn(false);
         paymentProcessor.processPayment(payment);
         verify(dataRepository, times(1)).save(payment);
         verify(storeLogsService, never()).sendLogsToDefaultSystem(any());

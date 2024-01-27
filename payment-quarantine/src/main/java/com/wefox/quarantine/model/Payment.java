@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Payment {
     @Id
     @JsonProperty("payment_id")
-    private UUID paymentId;
+    private String paymentId;
 
     @JsonProperty("account_id")
     private int accountId;

@@ -1,4 +1,4 @@
-package com.wefox.paymentservice.model;
+package com.wefox.quarantine.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "payment_errors")
+@Table(name = "error_logs_quarantine")
 public class PaymentError {
     @Id
     private String id;
@@ -15,4 +15,5 @@ public class PaymentError {
     private String errorType;
     private String errorDescription;
 
+    // Constructors, getters, setters
 }

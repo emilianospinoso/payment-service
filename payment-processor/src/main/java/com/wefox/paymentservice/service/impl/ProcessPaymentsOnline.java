@@ -43,9 +43,11 @@ public class ProcessPaymentsOnline implements ProcessorService {
                 boolean paymentExists = dataRepository.existsById(payment.getPaymentId());
 
                 if (paymentExists) {
+                    // Existing payment, update logic here
                     dataRepository.save(payment);
                     LOGGER.info("Payment updated successfully.");
                 } else {
+                    // New payment, insert logic here
                     dataRepository.save(payment);
                     LOGGER.info("New payment processed successfully.");
                 }
@@ -97,10 +99,11 @@ public class ProcessPaymentsOnline implements ProcessorService {
     }
 
     private void handleServerError(HttpServerErrorException e) {
-        if (e.getRawStatusCode() == 504) {
+        HttpStatus httpStatus = (HttpStatus) e.getStatusCode();
+        if (httpStatus.value() == 504) {
             LOGGER.warn("Gateway Timeout (504) encountered. Retrying...");
         } else {
-            LOGGER.error("HTTP Server Error. Retrying...", e);
+            LOGGER.error("HTTP Server Error. Retrying... HTTP status code: {}", httpStatus.value(), e);
         }
     }
 }

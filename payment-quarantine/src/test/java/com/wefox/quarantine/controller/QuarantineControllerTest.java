@@ -41,7 +41,7 @@ public class QuarantineControllerTest {
     @Test
     public void testPublishPayment() throws Exception {
         Payment mockPayment = new Payment();
-        UUID paymentId = UUID.randomUUID();
+        String paymentId = "234435K43JN53K45JN";
         mockPayment.setPaymentId(paymentId);
         mockPayment.setAccountId(123);
         Mockito.when(quarantineStoreService.storePayment(Mockito.any(Payment.class))).thenReturn(mockPayment);

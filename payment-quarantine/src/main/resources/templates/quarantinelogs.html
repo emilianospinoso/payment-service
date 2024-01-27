@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quarantine Logs</title>
+</head>
+<body>
+<h2>Error Logs in Quarantine</h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Error Type</th>
+        <th>Error Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="error : ${errors}">
+        <td th:text="${error.id}"></td>
+        <td th:text="${error.errorType}"></td>
+        <td th:text="${error.errorDescription}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
