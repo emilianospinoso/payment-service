@@ -6,6 +6,7 @@ import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.ProcessorService;
 import com.wefox.paymentservice.service.impl.ProcessPaymentOffline;
 import com.wefox.paymentservice.util.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
+@Slf4j
 @Service
-public class PaymentOfflineConsumer implements PaymentConsumer{
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentOfflineConsumer.class);
+public class PaymentOfflineConsumer implements PaymentConsumer {
     private final ProcessorService processorService;
 
     @Autowired
@@ -26,12 +27,12 @@ public class PaymentOfflineConsumer implements PaymentConsumer{
 
     @KafkaListener(topics = "offline", groupId = "myGroup")
     public void consume(String eventMessage) {
-        LOGGER.info(String.format("Offline--Message message recieved -> %s", eventMessage));
+        log.info(String.format("Offline--Message message recieved -> %s", eventMessage));
         try {
             Payment payment = JsonUtils.convertJsonToPayment(eventMessage);
             processorService.processPayment(payment);
         } catch (Exception e) {
-            LOGGER.error("Error mapping message to Payment", e);
+            log.error("Error mapping message to Payment", e);
         }
     }
 }

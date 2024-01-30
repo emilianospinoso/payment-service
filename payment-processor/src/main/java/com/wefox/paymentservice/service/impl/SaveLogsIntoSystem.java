@@ -5,18 +5,20 @@ import com.wefox.paymentservice.model.PaymentError;
 import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.StoreLogsService;
 import com.wefox.paymentservice.util.PaymentConversionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import java.util.Map;
 
+@Slf4j
 public class SaveLogsIntoSystem implements StoreLogsService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SaveLogsIntoSystem.class);
+    private static final String LOG_URL = "http://localhost:9000/log";
+
     private final RestOperations restOperations;
     private final PaymentAndLogToQuarantine paymentAndLogToQuarantine;
 
@@ -45,19 +47,17 @@ public class SaveLogsIntoSystem implements StoreLogsService {
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(logPayload, headers);
 
             ResponseEntity<String> response = restOperations.postForEntity(
-                    "http://localhost:9000/log", requestEntity, String.class);
+                    LOG_URL, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                LOGGER.info("Logs stored successfully.");
+                log.info("Logs stored successfully for payment_id: {}", payment.getPaymentId());
             } else {
                 // If connection with the default logger service fails, send the payment to quarantine
-                LOGGER.error("Failed to store logs. HTTP status code: {}", response.getStatusCodeValue());
-                LOGGER.error("EL PAYMENTERROR QUE MANDO ES : " + paymentError.getId());
-                LOGGER.error("lA descripction QUE MANDO ES : " + paymentError.getErrorDescription());
+                log.error("Failed to store logs. HTTP status code: {}", response.getStatusCodeValue());
                 paymentAndLogToQuarantine.sendLogToQuarantine(paymentError);
             }
-        } catch (Exception e) {
-            LOGGER.error("Error sending logs to storage", e);
+        } catch (RestClientException e) {
+            log.error("Error sending logs to storage", e);
         }
     }
 }

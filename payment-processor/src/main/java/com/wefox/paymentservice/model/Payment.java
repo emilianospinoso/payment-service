@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class Payment {
     @Id
     @JsonProperty("payment_id")
-    private String paymentId; // Change the type to String for UUID
+    private String paymentId;
 
     @JsonProperty("account_id")
     private int accountId;

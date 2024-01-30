@@ -5,25 +5,22 @@ import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.model.PaymentCriteria;
 import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.service.PaymentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
+    private final PaymentDataRepository paymentDataRepository;
 
     @Autowired
-    private PaymentDataRepository paymentDataRepository;
-
-    @Override
-    public List<Payment> getAllPayments() {
-        return paymentDataRepository.findAll();
+    public PaymentServiceImpl(PaymentDataRepository paymentDataRepository) {
+        this.paymentDataRepository = paymentDataRepository;
     }
 
     @Override
@@ -32,22 +29,22 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (criteria.getAccountId() != null) {
             specification = specification.and(PaymentSpecifications.accountIdEquals(criteria.getAccountId()));
-            LOGGER.info("Added condition: accountIdEquals, accountId={}", criteria.getAccountId());
+            log.info("Added condition: accountIdEquals, accountId={}", criteria.getAccountId());
         }
 
         if (criteria.getPaymentType() != null) {
             specification = specification.and(PaymentSpecifications.paymentTypeEquals(criteria.getPaymentType()));
-            LOGGER.info("Added condition: paymentTypeEquals, paymentType={}", criteria.getPaymentType());
+            log.info("Added condition: paymentTypeEquals, paymentType={}", criteria.getPaymentType());
         }
 
         if (criteria.getAmountGreaterThan() != null) {
             specification = specification.and(PaymentSpecifications.amountGreaterThan(criteria.getAmountGreaterThan()));
-            LOGGER.info("Added condition: amountGreaterThan, amount={}", criteria.getAmountGreaterThan());
+            log.info("Added condition: amountGreaterThan, amount={}", criteria.getAmountGreaterThan());
         }
 
         List<Payment> payments = paymentDataRepository.findAll(specification);
-        LOGGER.info("Querying payments with criteria: {}", criteria);
-        LOGGER.info("Found {} payments matching the criteria.", payments.size());
+        log.info("Querying payments with criteria: {}", criteria);
+        log.info("Found {} payments matching the criteria.", payments.size());
 
         return payments;
     }

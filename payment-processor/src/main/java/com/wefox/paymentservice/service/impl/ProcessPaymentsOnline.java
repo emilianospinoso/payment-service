@@ -6,8 +6,7 @@ import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.ProcessorService;
 import com.wefox.paymentservice.service.StoreLogsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
@@ -15,22 +14,19 @@ import org.springframework.web.client.RestOperations;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class ProcessPaymentsOnline implements ProcessorService {
     private final PaymentDataRepository dataRepository;
     private final RestOperations restOperations;
-    private final ObjectMapper objectMapper;
-
     private final StoreLogsService storeLogsService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPaymentsOnline.class);
-
     private static final int MAX_RETRIES = 3;
-
+    private static final int GATEWAY_TIMEOUT = 504;
     private final PaymentAndLogToQuarantine paymentAndLogToQuarantine;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ProcessPaymentsOnline(PaymentDataRepository dataRepository, RestOperations restOperations, PaymentAndLogToQuarantine paymentAndLogToQuarantine) {
         this.dataRepository = dataRepository;
         this.restOperations = restOperations;
-        this.objectMapper = new ObjectMapper();  // Initialize ObjectMapper
         this.storeLogsService = new SaveLogsIntoSystem(restOperations, paymentAndLogToQuarantine);
         this.paymentAndLogToQuarantine = paymentAndLogToQuarantine;
     }
@@ -40,20 +36,13 @@ public class ProcessPaymentsOnline implements ProcessorService {
         try {
             ResponseEntity<String> response = sendRequestWithRetry(payment);
             if (response.getStatusCode().is2xxSuccessful()) {
-                boolean paymentExists = dataRepository.existsById(payment.getPaymentId());
-
-                if (paymentExists) {
-                    // Existing payment, update logic here
+                // Synchronized block to ensure thread safety during save operation
+                synchronized (this) {
                     dataRepository.save(payment);
-                    LOGGER.info("Payment updated successfully.");
-                } else {
-                    // New payment, insert logic here
-                    dataRepository.save(payment);
-                    LOGGER.info("New payment processed successfully.");
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Error trying to process Payment Online: " + payment.getPaymentId() + " " + e);
+            log.error("Error trying to process Payment Online: " + payment.getPaymentId(), e);
             storeLogsService.sendLogsToDefaultSystem(payment);
         }
     }
@@ -63,7 +52,7 @@ public class ProcessPaymentsOnline implements ProcessorService {
 
         while (retryCount.get() < MAX_RETRIES) {
             try {
-                LOGGER.info("Sending request. Retry count: {}", retryCount.get());
+                log.info("Sending request. Retry count: {}", retryCount.get());
 
                 String paymentJson = objectMapper.writeValueAsString(payment);
 
@@ -76,9 +65,8 @@ public class ProcessPaymentsOnline implements ProcessorService {
                         requestEntity,
                         String.class
                 );
-
                 if (response.getStatusCode().is2xxSuccessful()) {
-                    return response; // Successful response, exit the loop
+                    return response;
                 } else {
                     retryCount.incrementAndGet();
                 }
@@ -86,10 +74,10 @@ public class ProcessPaymentsOnline implements ProcessorService {
                 handleServerError(e);
                 retryCount.incrementAndGet();
             } catch (RestClientException e) {
-                LOGGER.error("RestClientException. Retrying...", e);
+                log.error("RestClientException. Retrying...", e);
                 retryCount.incrementAndGet();
             } catch (Exception e) {
-                LOGGER.error("Error during JSON serialization: " + e);
+                log.error("Error during JSON serialization:", e);
                 retryCount.incrementAndGet();
             }
         }
@@ -100,10 +88,10 @@ public class ProcessPaymentsOnline implements ProcessorService {
 
     private void handleServerError(HttpServerErrorException e) {
         HttpStatus httpStatus = (HttpStatus) e.getStatusCode();
-        if (httpStatus.value() == 504) {
-            LOGGER.warn("Gateway Timeout (504) encountered. Retrying...");
+        if (httpStatus.value() == GATEWAY_TIMEOUT) {
+            log.warn("Gateway Timeout (504) encountered. Retrying...");
         } else {
-            LOGGER.error("HTTP Server Error. Retrying... HTTP status code: {}", httpStatus.value(), e);
+            log.error("HTTP Server Error. Retrying... HTTP status code: {}", httpStatus.value(), e);
         }
     }
 }
