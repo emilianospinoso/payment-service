@@ -4,27 +4,39 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "payments_processed")
 @Data
-@NoArgsConstructor
-public class Payment {
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
+@AllArgsConstructor
+public final class Payment {
     @Id
     @JsonProperty("payment_id")
-    private String paymentId;
+    private final String paymentId;
 
     @JsonProperty("account_id")
-    private int accountId;
+    private final int accountId;
 
     @JsonProperty("payment_type")
-    private String paymentType;
+    private final String paymentType;
 
     @JsonProperty("credit_card")
-    private String creditCard;
+    private final String creditCard;
 
-    private int amount;
-    private int delay;
+    private final int amount;
+
+    private final int delay;
+
+    public Payment withAmount(int newAmount) {
+        return new Payment(paymentId, accountId, paymentType, creditCard, newAmount, delay);
+    }
+
+    public Payment withDelay(int newDelay) {
+        return new Payment(paymentId, accountId, paymentType, creditCard, amount, newDelay);
+    }
 }

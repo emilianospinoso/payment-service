@@ -36,7 +36,6 @@ public class ProcessPaymentsOnline implements ProcessorService {
         try {
             ResponseEntity<String> response = sendRequestWithRetry(payment);
             if (response.getStatusCode().is2xxSuccessful()) {
-                // Synchronized block to ensure thread safety during save operation
                 synchronized (this) {
                     dataRepository.save(payment);
                 }
