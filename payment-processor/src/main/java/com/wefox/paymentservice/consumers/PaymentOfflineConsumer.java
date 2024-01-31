@@ -1,5 +1,6 @@
 package com.wefox.paymentservice.consumers;
 
+import com.wefox.paymentservice.exceptions.PaymentProcessingException;
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
@@ -33,6 +34,7 @@ public class PaymentOfflineConsumer implements PaymentConsumer {
             processorService.processPayment(payment);
         } catch (Exception e) {
             log.error("Error mapping message to Payment", e);
+            throw new PaymentProcessingException("Error processing payment", e);
         }
     }
 }

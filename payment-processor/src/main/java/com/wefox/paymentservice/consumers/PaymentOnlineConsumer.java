@@ -1,5 +1,6 @@
 package com.wefox.paymentservice.consumers;
 
+import com.wefox.paymentservice.exceptions.PaymentProcessingException;
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
@@ -16,7 +17,7 @@ import org.springframework.web.client.RestOperations;
 
 @Slf4j
 @Service
-public class PaymentOnlineConsumer implements PaymentConsumer{
+public class PaymentOnlineConsumer implements PaymentConsumer {
     private final ProcessorService processorService;
 
     @Autowired
@@ -34,6 +35,7 @@ public class PaymentOnlineConsumer implements PaymentConsumer{
             processorService.processPayment(payment);
         } catch (Exception e) {
             log.error("Error processing payment: ", e);
+            throw new PaymentProcessingException("Error processing payment", e);
         }
     }
 }

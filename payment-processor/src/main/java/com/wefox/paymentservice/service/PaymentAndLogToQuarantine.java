@@ -4,9 +4,8 @@ import com.wefox.paymentservice.configuration.QuarantineServiceConfig;
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.model.PaymentError;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,13 +23,20 @@ public class PaymentAndLogToQuarantine {
     }
 
     public void sendPaymentToQuarantine(Payment payment) {
-        restTemplate.postForObject(paymentQuarantineApiUrl, payment, Boolean.class);
-        log.error(payment.getPaymentId() + " Payment was moved to quarantine for future analysis");
+        try {
+            restTemplate.postForObject(paymentQuarantineApiUrl, payment, Boolean.class);
+            log.error(payment.getPaymentId() + " Payment was moved to quarantine for future analysis");
+        } catch (RestClientException ex) {
+            log.error("Error sending payment to quarantine: " + ex.getMessage());
+        }
     }
 
     public void sendLogToQuarantine(PaymentError paymentError) {
-        restTemplate.postForObject(logToQuarantineApiUrl, paymentError, Boolean.class);
-        log.error(paymentError.getId() + " Log was moved to quarantine for send to logSystem in the future");
+        try {
+            restTemplate.postForObject(logToQuarantineApiUrl, paymentError, Boolean.class);
+            log.error(paymentError.getId() + " Log was moved to quarantine for send to logSystem in the future");
+        } catch (RestClientException ex) {
+            log.error("Error sending log to quarantine: " + ex.getMessage());
+        }
     }
-
 }
