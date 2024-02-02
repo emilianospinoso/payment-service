@@ -26,7 +26,7 @@ public class PaymentOnlineConsumer implements PaymentConsumer {
         this.processorService = new ProcessPaymentsOnline(dataRepository, restOperations, paymentAndLogToQuarantine);
     }
 
-    @KafkaListener(topics = "online", groupId = "myGroup")
+    @KafkaListener(topics = "online", groupId = "myGroup", concurrency = "5")
     public void consume(String eventMessage) {
         try {
             log.info(String.format("Online--Message message recieved -> %s", eventMessage));

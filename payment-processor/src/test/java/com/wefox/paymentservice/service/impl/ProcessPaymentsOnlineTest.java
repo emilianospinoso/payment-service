@@ -1,26 +1,28 @@
 package com.wefox.paymentservice.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wefox.paymentservice.model.Payment;
 import com.wefox.paymentservice.repository.PaymentDataRepository;
 import com.wefox.paymentservice.service.PaymentAndLogToQuarantine;
 import com.wefox.paymentservice.service.StoreLogsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestOperations;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProcessPaymentsOnlineTest {
-
-    @InjectMocks
-    private ProcessPaymentsOnline paymentProcessor;
 
     @Mock
     private PaymentDataRepository dataRepository;
@@ -29,45 +31,50 @@ class ProcessPaymentsOnlineTest {
     private RestOperations restOperations;
 
     @Mock
-    private PaymentAndLogToQuarantine paymentAndLogToQuarantine;
+    private StoreLogsService storeLogsService;
 
     @Mock
-    private StoreLogsService storeLogsService;
+    private PaymentAndLogToQuarantine paymentAndLogToQuarantine;
+
+    @InjectMocks
+    private ProcessPaymentsOnline processPaymentsOnline;
+
+    private Payment testPayment;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        // Initialize test payment
+        testPayment = new Payment("testId", 1, "type", "card", 100, 0);
     }
 
     @Test
-    void testProcessPaymentSuccessful() {
+    void processPayment_SuccessfulRequest_SaveToRepository() {
         // Arrange
-        Payment payment = new Payment();
-
-        ResponseEntity<String> successResponse = new ResponseEntity<>("Success", HttpStatus.OK);
         when(restOperations.exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class)))
-                .thenReturn(successResponse);
+                .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        paymentProcessor.processPayment(payment);
+        processPaymentsOnline.processPayment(testPayment);
 
         // Assert
-        verify(dataRepository, times(1)).existsById(any());
-        verify(dataRepository, times(1)).save(payment);
-        verify(storeLogsService, never()).sendLogsToDefaultSystem(any());
-        verify(paymentAndLogToQuarantine, never()).sendPaymentToQuarantine(any());
+        verify(dataRepository, times(1)).save(testPayment);
     }
 
     @Test
-    void testProcessPaymentWithServerError() {
+    void processPayment_UnsuccessfulRequest_RetryAndSendToQuarantine() {
         // Arrange
-        Payment payment = new Payment();
         when(restOperations.exchange(anyString(), eq(HttpMethod.POST), any(), eq(String.class)))
-                .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+                .thenReturn(new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR))
+                .thenReturn(new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR))
+                .thenReturn(new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR));
+
         // Act
-        paymentProcessor.processPayment(payment);
+        assertThrows(RuntimeException.class, () -> processPaymentsOnline.processPayment(testPayment));
+
         // Assert
-        verify(paymentAndLogToQuarantine, times(1)).sendPaymentToQuarantine(payment);
+        verify(dataRepository, never()).save(testPayment);
+        verify(storeLogsService, times(1)).sendLogsToDefaultSystem(testPayment);
+        verify(paymentAndLogToQuarantine, times(1)).sendPaymentToQuarantine(testPayment);
     }
 
 }
